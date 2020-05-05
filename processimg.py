@@ -13,6 +13,9 @@
 # https://docs.aws.amazon.com/rekognition/latest/dg/images-s3.html
 # https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html
 #
+# INFO: tag s3 objects
+# https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.put_object_tagging
+
 
 import boto3
 
