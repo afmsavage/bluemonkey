@@ -9,6 +9,10 @@
 # Identify images that have been processed and do not process them again
 # Have some sort of logging to identify images that were processed and ones that failed
 
+# INFO:
+# https://docs.aws.amazon.com/rekognition/latest/dg/images-s3.html
+# https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html
+#
 
 import boto3
 
@@ -27,10 +31,10 @@ def detect_labels(photo, bucket):
         print ("Instances:")
         for instance in label['Instances']:
             print ("  Bounding box")
-            print ("    Top: " + str(instance['BoundingBox']['Top']))
-            print ("    Left: " + str(instance['BoundingBox']['Left']))
-            print ("    Width: " +  str(instance['BoundingBox']['Width']))
-            print ("    Height: " +  str(instance['BoundingBox']['Height']))
+            # print ("    Top: " + str(instance['BoundingBox']['Top']))
+            # print ("    Left: " + str(instance['BoundingBox']['Left']))
+            # print ("    Width: " +  str(instance['BoundingBox']['Width']))
+            # print ("    Height: " +  str(instance['BoundingBox']['Height']))
             print ("  Confidence: " + str(instance['Confidence']))
             print()
 
