@@ -23,9 +23,17 @@ def detect_labels(photo, bucket):
 
     client=boto3.client('rekognition')
 
-    response = client.detect_labels(Image={'S3Object':{'Bucket':bucket,'Name':photo}},
-        MaxLabels=10)
-
+    response = client.detect_labels(
+        Image={
+            'S3Object':{
+                'Bucket':bucket,
+                'Name':photo
+            },
+        },
+        MaxLabels=10,
+        MinConfidence=90
+    )
+    # Testing output
     print('Detected labels for ' + photo)
     print()
     for label in response['Labels']:
