@@ -1,13 +1,18 @@
-#Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazon-rekognition-developer-guide/blob/master/LICENSE-SAMPLECODE.)
+
+# Bluemonkey
+# Antonio Savage
+# v0.0.1
+#
+# Processes images stored in AWS S3 buckets with Rekognition.
+# Applies the detected labels to each image to make them searchable
+#
 
 # TODO:
-# Process the output and find any labels that are 90%+
-# Figure out how to apply the labels to the images in s3
 # Recursively search through the s3 bucket for image files to process
-# Place some sort of tag or label on items that have been processed
+# Add Pagination to the s3 list function so that it can handle the sheer amount of images we have to process
 # Identify images that have been processed and do not process them again
 # Have some sort of logging to identify images that were processed and ones that failed
+# Error handling
 
 # INFO:
 # https://docs.aws.amazon.com/rekognition/latest/dg/images-s3.html
@@ -15,54 +20,61 @@
 #
 # INFO: tag s3 objects
 # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.put_object_tagging
+# Batch Actions
+# https://boto3.amazonaws.com/v1/documentation/api/latest/guide/collections.html#guide-collections
+# Paginators
+# https://boto3.amazonaws.com/v1/documentation/api/latest/guide/paginators.html
 
 
 import boto3
+s3 = boto3.client('s3')
+photo = ''
+bucket_name = 'bluemonkeyimages'
 
-def detect_labels(photo, bucket):
+def detect_labels(photo):
 
     client=boto3.client('rekognition')
 
     response = client.detect_labels(
         Image={
             'S3Object':{
-                'Bucket':bucket,
+                'Bucket':bucket_name,
                 'Name':photo
             },
         },
         MaxLabels=10,
         MinConfidence=90
     )
-    # Testing output
+    # Testing output for labels
     print('Detected labels for ' + photo)
     print()
     for label in response['Labels']:
         print ("Label: " + label['Name'])
         print ("Confidence: " + str(label['Confidence']))
-        print ("Instances:")
-        for instance in label['Instances']:
-            print ("  Bounding box")
-            # print ("    Top: " + str(instance['BoundingBox']['Top']))
-            # print ("    Left: " + str(instance['BoundingBox']['Left']))
-            # print ("    Width: " +  str(instance['BoundingBox']['Width']))
-            # print ("    Height: " +  str(instance['BoundingBox']['Height']))
-            print ("  Confidence: " + str(instance['Confidence']))
-            print()
-
-        print ("Parents:")
-        for parent in label['Parents']:
-            print ("   " + parent['Name'])
         print ("----------")
-        print ()
+
+    # TODO: Need to iterate through all detected labels.  Only applying 1 currently
+    # applies tags to images
+    for tag in response['Labels']:
+        s3.put_object_tagging(
+            Bucket = bucket_name,
+            Key = photo,
+            Tagging = {
+                'TagSet': [
+                    {
+                        'Key': 'Label',
+                        'Value': tag['Name'],
+                    }
+                ]
+            }
+        )
     return len(response['Labels'])
 
 
-def main():
-    photo='sample/bluemonkeycartoon.jpg'
-    bucket='bluemonkeyimages'
-    label_count=detect_labels(photo, bucket)
-    print("Labels detected: " + str(label_count))
+# TODO: Add pagination to this so that it can handle the amount of images we need to process
+s3response = s3.list_objects_v2(
+    Bucket=bucket_name
+)
 
-
-if __name__ == "__main__":
-    main()
+for key in s3response['Contents']:
+    detect_labels(key['Key'])
