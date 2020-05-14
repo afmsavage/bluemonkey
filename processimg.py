@@ -29,37 +29,39 @@
 import boto3
 s3 = boto3.client('s3')
 photo = ''
-bucket_name = 'bluemonkeyimages'
+bucket_name = 'bluemonkeytest'
+
 
 def detect_labels(photo):
 
-    client=boto3.client('rekognition')
+    client = boto3.client('rekognition')
 
     response = client.detect_labels(
         Image={
-            'S3Object':{
-                'Bucket':bucket_name,
-                'Name':photo
+            'S3Object': {
+                'Bucket': bucket_name,
+                'Name': photo
             },
         },
-        MaxLabels=10,
-        MinConfidence=90
+        #    MaxLabels=10,
+        #  MinConfidence=90
     )
     # Testing output for labels
     print('Detected labels for ' + photo)
     print()
     for label in response['Labels']:
-        print ("Label: " + label['Name'])
-        print ("Confidence: " + str(label['Confidence']))
-        print ("----------")
+        print("Label: " + label['Name'])
+        print("Confidence: " + str(label['Confidence']))
+        print("----------")
+        print()
 
     # TODO: Need to iterate through all detected labels.  Only applying 1 currently
     # applies tags to images
     for tag in response['Labels']:
         s3.put_object_tagging(
-            Bucket = bucket_name,
-            Key = photo,
-            Tagging = {
+            Bucket=bucket_name,
+            Key=photo,
+            Tagging={
                 'TagSet': [
                     {
                         'Key': 'Label',
