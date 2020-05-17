@@ -54,7 +54,7 @@ def detect_labels(photo):
         print("Confidence: " + str(label['Confidence']))
         print("----------")
         print()
-
+        # apply Rekonition labels to image files
         try:
             print(f"attaching tag: {label['Name']} with Label-{ammt}")
             s3.put_object_tagging(
@@ -72,7 +72,7 @@ def detect_labels(photo):
             ammt -= 1
         except:
             print(f"could not apply {label['Name']} to {photo}")
-            # TODO: Log this error to a file instead of print it
+            # TODO: Log error to file
     # TODO: Add a tag to say this image is processed
 
 # TODO: Add pagination to this so that it can handle the amount of images we need to process
