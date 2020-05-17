@@ -29,8 +29,7 @@
 import boto3
 s3 = boto3.client('s3')
 photo = ''
-bucket_name = 'bluemonkeytest'
-
+bucket_name = 'bluemonkeyimages'
 
 def detect_labels(photo):
 
@@ -49,34 +48,41 @@ def detect_labels(photo):
     # Testing output for labels
     print('Detected labels for ' + photo)
     print()
+    ammt = len(response['Labels'])
     for label in response['Labels']:
         print("Label: " + label['Name'])
         print("Confidence: " + str(label['Confidence']))
         print("----------")
         print()
 
-    # TODO: Need to iterate through all detected labels.  Only applying 1 currently
-    # applies tags to images
-    for tag in response['Labels']:
-        s3.put_object_tagging(
-            Bucket=bucket_name,
-            Key=photo,
-            Tagging={
-                'TagSet': [
-                    {
-                        'Key': 'Label',
-                        'Value': tag['Name'],
-                    }
-                ]
-            }
-        )
-    return len(response['Labels'])
-
+        try:
+            print(f"attaching tag: {label['Name']} with Label-{ammt}")
+            s3.put_object_tagging(
+                        Bucket=bucket_name,
+                        Key=photo,
+                        Tagging={
+                            'TagSet': [
+                                {
+                                    'Key': f'Label-{ammt}',
+                                    'Value': label['Name'],
+                                }
+                            ]
+                        }
+                    )
+            ammt -= 1
+        except:
+            print(f"could not apply {label['Name']} to {photo}")
+            # TODO: Log this error to a file instead of print it
+    # TODO: Add a tag to say this image is processed
 
 # TODO: Add pagination to this so that it can handle the amount of images we need to process
 s3response = s3.list_objects_v2(
     Bucket=bucket_name
 )
 
-for key in s3response['Contents']:
-    detect_labels(key['Key'])
+if __name__ == "__main__":
+
+    for key in s3response['Contents']:
+        detect_labels(key['Key'])
+
+
