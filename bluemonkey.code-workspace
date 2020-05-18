@@ -4,5 +4,7 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.pythonPath": "C:\\Users\\asavage\\.virtualenvs\\bluemonkey-fzvBw7FM\\Scripts\\python.exe"
+	}
 }

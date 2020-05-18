@@ -29,7 +29,7 @@
 import boto3
 s3 = boto3.client('s3')
 photo = ''
-bucket_name = 'bluemonkeyimages'
+bucket_name = 'bluemonkeytest'
 
 def detect_labels(photo):
 
@@ -48,30 +48,34 @@ def detect_labels(photo):
     # Testing output for labels
     print('Detected labels for ' + photo)
     print()
-    ammt = len(response['Labels'])
     for label in response['Labels']:
         print("Label: " + label['Name'])
         print("Confidence: " + str(label['Confidence']))
         print("----------")
         print()
         # apply Rekonition labels to image files
-        try:
-            print(f"attaching tag: {label['Name']} with Label-{ammt}")
-            s3.put_object_tagging(
-                        Bucket=bucket_name,
-                        Key=photo,
-                        Tagging={
-                            'TagSet': [
-                                {
-                                    'Key': f'Label-{ammt}',
-                                    'Value': label['Name'],
-                                }
-                            ]
-                        }
-                    )
-            ammt -= 1
-        except:
-            print(f"could not apply {label['Name']} to {photo}")
+    tagset = []
+    for tag in response['Labels']:
+        tagset += {
+            f"'Key': {tag['Name']}",
+            "'Value': 'True'",
+        }
+    print(tagset)
+    try:
+        s3.put_object_tagging(
+                    Bucket=bucket_name,
+                    Key=photo,
+                    Tagging={
+                        'TagSet': tagset
+                            # {
+                            #     'Key': f"{tag['Name']}",
+                            #     'Value': "True",
+                            # }
+
+                    }
+                )
+    except:
+        print(f"could not apply {tag['Name']} to {photo}")
             # TODO: Log error to file
     # TODO: Add a tag to say this image is processed
 
@@ -84,5 +88,4 @@ if __name__ == "__main__":
 
     for key in s3response['Contents']:
         detect_labels(key['Key'])
-
 
