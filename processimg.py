@@ -54,29 +54,23 @@ def detect_labels(photo):
         print("----------")
         print()
         # apply Rekonition labels to image files
-    tagset = []
-    for tag in response['Labels']:
-        tagset += {
-            f"'Key': {tag['Name']}",
-            "'Value': 'True'",
-        }
-    print(tagset)
+
+        tagset = []
+        dict = {'Key': f"{label['Name']}", 'Value': "True"}
+        tagset.append(dict)
+
+
     try:
         s3.put_object_tagging(
                     Bucket=bucket_name,
                     Key=photo,
                     Tagging={
-                        'TagSet': tagset
-                            # {
-                            #     'Key': f"{tag['Name']}",
-                            #     'Value': "True",
-                            # }
-
+                        'Tagset': tagset
                     }
                 )
     except:
-        print(f"could not apply {tag['Name']} to {photo}")
-            # TODO: Log error to file
+        print(f"could not apply {label['Name']} to {photo}")
+        # TODO: Log error to file
     # TODO: Add a tag to say this image is processed
 
 # TODO: Add pagination to this so that it can handle the amount of images we need to process
