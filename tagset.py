@@ -27,14 +27,14 @@
 
 
 import boto3
+import botocore
 s3 = boto3.client('s3')
 photo = ''
 bucket_name = 'bluemonkeyimages'
+client = boto3.client('rekognition')
 
-def detect_labels(photo):
 
-    client = boto3.client('rekognition')
-
+def create_tagset(photo):
     response = client.detect_labels(
         Image={
             'S3Object': {
@@ -42,37 +42,29 @@ def detect_labels(photo):
                 'Name': photo
             },
         },
-        #    MaxLabels=10,
-        #  MinConfidence=90
     )
-    # Testing output for labels
-    print('Detected labels for ' + photo)
-    print()
-    for label in response['Labels']:
-        print("Label: " + label['Name'])
-        print("Confidence: " + str(label['Confidence']))
-        print("----------")
-        print()
-        # apply Rekonition labels to image files
     tag_list = []
     for t in response['Labels']:
-        tag_list.append({'Key':t['Name'],
+        tag_list.append({'Key': t['Name'],
                         'Value': 'True'})
-
+    print(tag_list)
     try:
         s3.put_object_tagging(
-                    Bucket=bucket_name,
-                    Key=photo,
-                    Tagging={
-                        'Tagset': tag_list
-                    }
-                )
-    except:
-        print(f"could not apply {label['Name']} to {photo}")
-        # TODO: Log error to file
-    # TODO: Add a tag to say this image is processed
+            Bucket=bucket_name,
+            Key=photo,
+            Tagging={
+                'Tagset': tag_list
+            }
+        )
+    except botocore.exceptions.ClientError as error:
+        print(f"could not apply labels to {photo}")
+        raise error
 
-# TODO: Add pagination to this so that it can handle the amount of images we need to process
+    except botocore.exceptions.ParamValidationError as error:
+        raise ValueError(
+            'The parameters you provided are incorrect: {}'.format(error))
+
+
 s3response = s3.list_objects_v2(
     Bucket=bucket_name
 )
@@ -80,5 +72,4 @@ s3response = s3.list_objects_v2(
 if __name__ == "__main__":
 
     for key in s3response['Contents']:
-        detect_labels(key['Key'])
-
+        create_tagset(key['Key'])
