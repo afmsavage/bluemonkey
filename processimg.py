@@ -64,7 +64,7 @@ def detect_labels(photo):
                     Bucket=bucket_name,
                     Key=photo,
                     Tagging={
-                        'Tagset': tag_list
+                        'TagSet': tag_list
                     }
                 )
     except:

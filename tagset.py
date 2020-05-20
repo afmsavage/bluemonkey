@@ -42,6 +42,7 @@ def create_tagset(photo):
                 'Name': photo
             },
         },
+          MaxLabels=10,
     )
     tag_list = []
     for t in response['Labels']:
@@ -53,7 +54,7 @@ def create_tagset(photo):
             Bucket=bucket_name,
             Key=photo,
             Tagging={
-                'Tagset': tag_list
+                'TagSet': tag_list
             }
         )
     except botocore.exceptions.ClientError as error:
