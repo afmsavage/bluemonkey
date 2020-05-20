@@ -42,7 +42,7 @@ def create_tagset(photo):
                 'Name': photo
             },
         },
-          MaxLabels=10,
+        MaxLabels=10,
     )
     tag_list = []
     for t in response['Labels']:
