@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import boto3
 import botocore
 import datetime
@@ -21,8 +23,8 @@ def create_tagset(image):
         MaxLabels=10,
     )
     tag_list = []
-    for t in response['Labels']:
-        tag_list.append({'Key': t['Name'],
+    for labels in response['Labels']:
+        tag_list.append({'Key': labels['Name'],
                         'Value': 'True'})
     try:
         s3.put_object_tagging(
@@ -35,25 +37,26 @@ def create_tagset(image):
         # logfile.write(f'Successfully Processed {photo}')
     except botocore.exceptions.ClientError as error:
         logfile = open(f'{timestamp}.log', 'w')
-        logfile.write(f'could not apply labels to {image}')
+        logfile.write(f'Could not apply labels to {image}.')
         logfile.write(error)
         raise error
 
+def tag_iterator():
+    total = 0
+    # pagination through all images
+    paginator = s3.get_paginator('list_objects_v2')
+    page_iterator = paginator.paginate(
+        Bucket=bucket_name,
+        PaginationConfig={
+            'PageSize': 50 # lessen if errors
+        }
+    )
+    for page in page_iterator:
+        for key in page['Contents']:
+            create_tagset(key['Key'])
+            total += 1
+    print('Complete!')
+    print(f'Processed {total} images!')
 
-# pagination through all images
-paginator = s3.get_paginator('list_objects_v2')
-page_iterator = paginator.paginate(
-                                    Bucket=bucket_name,
-                                    PaginationConfig={
-                                      'PageSize': 50 # lessen if errors
-                                    }
-)
-
-total = 0
 if __name__ == '__main__':
-  for page in page_iterator:
-    for key in page['Contents']:
-        create_tagset(key['Key'])
-        total += 1
-  print('Complete!')
-  print(f'Processed {total} images!')
+    tag_iterator()
