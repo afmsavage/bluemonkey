@@ -5,9 +5,7 @@ import datetime
 # logging
 dt = datetime.datetime.now()
 timestamp = dt.strftime('%Y%m%d%H%M')
-logfile = open(f'{timestamp}.log', 'w')
 
-photo = ''
 bucket_name = 'bluemonkeyimages'
 s3 = boto3.client('s3')
 client = boto3.client('rekognition')
@@ -26,7 +24,6 @@ def create_tagset(image):
     for t in response['Labels']:
         tag_list.append({'Key': t['Name'],
                         'Value': 'True'})
-    print(tag_list)
     try:
         s3.put_object_tagging(
             Bucket=bucket_name,
@@ -37,15 +34,26 @@ def create_tagset(image):
         )
         # logfile.write(f'Successfully Processed {photo}')
     except botocore.exceptions.ClientError as error:
-        logfile.write(f"could not apply labels to {image}")
+        logfile = open(f'{timestamp}.log', 'w')
+        logfile.write(f'could not apply labels to {image}')
+        logfile.write(error)
         raise error
 
+
 # pagination through all images
-s3response = s3.list_objects_v2(
-    Bucket=bucket_name
+paginator = s3.get_paginator('list_objects_v2')
+page_iterator = paginator.paginate(
+                                    Bucket=bucket_name,
+                                    PaginationConfig={
+                                      'PageSize': 50 # lessen if errors
+                                    }
 )
 
-if __name__ == "__main__":
-
-    for key in s3response['Contents']:
+total = 0
+if __name__ == '__main__':
+  for page in page_iterator:
+    for key in page['Contents']:
         create_tagset(key['Key'])
+        total += 1
+  print('Complete!')
+  print(f'Processed {total} images!')
