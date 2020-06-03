@@ -30,7 +30,7 @@ import boto3
 import botocore
 s3 = boto3.client('s3')
 photo = ''
-bucket_name = 'bluemonkeyimages'
+bucket_name = 'bluemonkeytest'
 client = boto3.client('rekognition')
 
 
@@ -44,26 +44,33 @@ def create_tagset(photo):
         },
         MaxLabels=10,
     )
-    tag_list = []
-    for t in response['Labels']:
-        tag_list.append({'Key': t['Name'],
-                        'Value': 'True'})
-    print(tag_list)
-    try:
-        s3.put_object_tagging(
-            Bucket=bucket_name,
-            Key=photo,
-            Tagging={
-                'TagSet': tag_list
-            }
-        )
-    except botocore.exceptions.ClientError as error:
-        print(f"could not apply labels to {photo}")
-        raise error
+    print('Detected labels for ' + photo)
+    print()
+    for label in response['Labels']:
+        print("Label: " + label['Name'])
+        print("Confidence: " + str(label['Confidence']))
+        print("----------")
+        print()
+    # tag_list = []
+    # for t in response['Labels']:
+    #     tag_list.append({'Key': t['Name'],
+    #                     'Value': 'True'})
+    # print(tag_list)
+    # try:
+    #     s3.put_object_tagging(
+    #         Bucket=bucket_name,
+    #         Key=photo,
+    #         Tagging={
+    #             'TagSet': tag_list
+    #         }
+    #     )
+    # except botocore.exceptions.ClientError as error:
+    #     print(f"could not apply labels to {photo}")
+    #     raise error
 
-    except botocore.exceptions.ParamValidationError as error:
-        raise ValueError(
-            'The parameters you provided are incorrect: {}'.format(error))
+    # except botocore.exceptions.ParamValidationError as error:
+    #     raise ValueError(
+    #         'The parameters you provided are incorrect: {}'.format(error))
 
 
 s3response = s3.list_objects_v2(

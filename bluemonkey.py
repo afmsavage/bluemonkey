@@ -8,7 +8,7 @@ import datetime
 dt = datetime.datetime.now()
 timestamp = dt.strftime('%Y%m%d%H%M')
 
-bucket_name = 'bluemonkeyimages'
+bucket_name = 'bluemonkeytest'
 s3 = boto3.client('s3')
 client = boto3.client('rekognition')
 
@@ -60,3 +60,5 @@ def tag_iterator():
 
 if __name__ == '__main__':
     tag_iterator()
+
+RekognitionLabel : True
