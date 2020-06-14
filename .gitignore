@@ -140,3 +140,4 @@ override.tf.json
 # End of https://www.gitignore.io/api/terraform,python
 
 settings.json
+TODO.txt
