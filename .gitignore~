@@ -136,7 +136,9 @@ override.tf.json
 
 # Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
 # example: *tfplan*
-.vscode
+
+# End of https://www.gitignore.io/api/terraform,python
+
 settings.json
 .vscode/
 .vscode/settings.json

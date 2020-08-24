@@ -1,0 +1,3 @@
+
+To have a Lambda that will fire on new objects uploaded to s3, check out the Python package chalice.
+https://github.com/aws/chalice
